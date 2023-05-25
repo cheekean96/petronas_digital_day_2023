@@ -1,52 +1,3 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
-
-function sendPatch(patch, buffers, msg_id) {
-  self.postMessage({
-    type: 'patch',
-    patch: patch,
-    buffers: buffers
-  })
-}
-
-async function startApplication() {
-  console.log("Loading pyodide!");
-  self.postMessage({type: 'status', msg: 'Loading pyodide'})
-  self.pyodide = await loadPyodide();
-  self.pyodide.globals.set("sendPatch", sendPatch);
-  console.log("Loaded!");
-  await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.4/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.4/dist/wheels/panel-0.14.4-py3-none-any.whl', 'pyodide-http==0.1.0', 'holoviews>=1.15.4', 'numpy', 'random']
-  for (const pkg of env_spec) {
-    let pkg_name;
-    if (pkg.endsWith('.whl')) {
-      pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
-    } else {
-      pkg_name = pkg
-    }
-    self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
-    try {
-      await self.pyodide.runPythonAsync(`
-        import micropip
-        await micropip.install('${pkg}');
-      `);
-    } catch(e) {
-      console.log(e)
-      self.postMessage({
-	type: 'status',
-	msg: `Error while installing ${pkg_name}`
-      });
-    }
-  }
-  console.log("Packages loaded!");
-  self.postMessage({type: 'status', msg: 'Executing code'})
-  const code = `
-  
-import asyncio
-
-from panel.io.pyodide import init_doc, write_doc
-
-init_doc()
-
 import panel as pn
 # from pso_panel import CreatePSOPanel
 # from ga_panel import CreateGAPanel
@@ -72,7 +23,7 @@ class Fitness:
             solution and the target coordinates.
 
         Note:
-            This function uses global variables \`target_x\` and \`target_y\` to represent the target coordinates.
+            This function uses global variables `target_x` and `target_y` to represent the target coordinates.
             These variables can be linked to a click event later.
         """
         return self.mean_squared_error_(soln, [self.target_x, self.target_y])
@@ -207,7 +158,7 @@ class PSO:
         update_swarm(follow_current, follow_personal_best, follow_social_best, follow_global_best, scale_update_step)
             Update each particle, randomly choosing informants for each particle's update.
         update_global_fittest()
-            Update the \`global_fittest\` variable to be the current fittest particle in the swarm.
+            Update the `global_fittest` variable to be the current fittest particle in the swarm.
     """
 
     def __init__(self, problem, swarm_size, vector_length, target_x, target_y, num_informants=2):
@@ -263,11 +214,11 @@ class PSO:
 
     def update_global_fittest(self):
         """
-        Update the \`global_fittest\` variable to be the current fittest particle in the swarm.
+        Update the `global_fittest` variable to be the current fittest particle in the swarm.
 
         Note:
             This method compares the fitness of each particle in the swarm and updates
-            \`global_fittest\` if a fitter particle is found.
+            `global_fittest` if a fitter particle is found.
         """
         fittest = self.find_current_best(self.swarm, self.problem)
         global_fittest_fitness = self.global_fittest.assess_fitness()
@@ -286,8 +237,8 @@ class PSO:
             scale_update_step: The scaling factor for the velocity update.
 
         Note:
-            This method updates the swarm by calling \`update_swarm\` to update each particle and
-            \`update_global_fittest\` to update the global fitness.
+            This method updates the swarm by calling `update_swarm` to update each particle and
+            `update_global_fittest` to update the global fitness.
         """
         self.update_swarm(
             follow_current, follow_personal_best, follow_social_best, follow_global_best, scale_update_step
@@ -734,59 +685,3 @@ pn.template.FastListTemplate(
     main=[ishow],
     **DEFAULT_PARAMS,
 ).servable()
-
-
-await write_doc()
-  `
-
-  try {
-    const [docs_json, render_items, root_ids] = await self.pyodide.runPythonAsync(code)
-    self.postMessage({
-      type: 'render',
-      docs_json: docs_json,
-      render_items: render_items,
-      root_ids: root_ids
-    })
-  } catch(e) {
-    const traceback = `${e}`
-    const tblines = traceback.split('\n')
-    self.postMessage({
-      type: 'status',
-      msg: tblines[tblines.length-2]
-    });
-    throw e
-  }
-}
-
-self.onmessage = async (event) => {
-  const msg = event.data
-  if (msg.type === 'rendered') {
-    self.pyodide.runPythonAsync(`
-    from panel.io.state import state
-    from panel.io.pyodide import _link_docs_worker
-
-    _link_docs_worker(state.curdoc, sendPatch, setter='js')
-    `)
-  } else if (msg.type === 'patch') {
-    self.pyodide.runPythonAsync(`
-    import json
-
-    state.curdoc.apply_json_patch(json.loads('${msg.patch}'), setter='js')
-    `)
-    self.postMessage({type: 'idle'})
-  } else if (msg.type === 'location') {
-    self.pyodide.runPythonAsync(`
-    import json
-    from panel.io.state import state
-    from panel.util import edit_readonly
-    if state.location:
-        loc_data = json.loads("""${msg.location}""")
-        with edit_readonly(state.location):
-            state.location.param.update({
-                k: v for k, v in loc_data.items() if k in state.location.param
-            })
-    `)
-  }
-}
-
-startApplication()
