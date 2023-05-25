@@ -1,1 +1,1 @@
-web: panel serve --address="0.0.0.0" --port=8080 pdd-dashboard.py --allow-websocket-origin=pdd-dashboard.herokuapp.com
+web: panel serve --address="0.0.0.0" --port=$PORT pdd-dashboard.py --allow-websocket-origin=pdd-dashboard.herokuapp.com
