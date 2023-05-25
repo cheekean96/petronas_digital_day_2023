@@ -1,5 +1,5 @@
-from algorithms.ga import GeneticAlgorithm
-from algorithms.fitness import Fitness
+from src.algorithms.ga import GeneticAlgorithm
+from src.algorithms.fitness import Fitness
 from holoviews import opts, dim
 import holoviews as hv
 import panel as pn
