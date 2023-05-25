@@ -1,4 +1,4 @@
-bleach==6.0.0
+bleach==4.1.0
 bokeh==3.1.1
 certifi==2023.5.7
 charset-normalizer==3.1.0
