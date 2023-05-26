@@ -7,7 +7,61 @@ pn.extension(sizing_mode="stretch_width")
 pso = CreatePSOPanel()
 ga = CreateGAPanel()
 
+welcome_page = pn.Column(
+    pn.pane.Markdown(
+        """
+        # Particle Swarm Optimization (PSO)
+        ## Unleashing the Power of Swarm Intelligence
+
+        Welcome to the world of Particle Swarm Optimization (PSO), where nature-inspired algorithms meet \
+        computational power. PSO mimics the behavior of a flock of birds or a school of fish to solve \
+        complex optimization problems. Let's dive into the concept of PSO and explore its real-life significance.
+
+        ![Particle Swarm Optimization](pso.jpg)
+
+        In PSO, particles represent potential solutions that navigate a problem space. Each particle adjusts its \
+        position and velocity based on its own best-known solution and the global best solution found by the swarm. \
+        Through communication and cooperation, the particles converge towards the optimal solution, balancing \
+        exploration and exploitation.
+
+        PSO's significance extends across various domains. In engineering, it aids in designing efficient systems \
+        like aircraft wings and energy-efficient buildings. In finance, it optimizes investment portfolios to \
+        maximize returns while minimizing risks. PSO also improves traffic flow by optimizing signal timings and \
+        route planning, reducing congestion and fuel consumption. Additionally, it plays a crucial role in training \
+        artificial neural networks, enhancing predictive models in fields such as image recognition and \
+        natural language processing.
+        """
+    ),
+    pn.layout.Divider(),
+    pn.pane.Markdown(
+        """
+        # Genetic Algorithm (GA)
+        ## Unleashing Evolutionary Power
+
+        Welcome to the world of Genetic Algorithms (GA), where nature's principles guide computational optimization. \
+        GA draws inspiration from the process of natural selection to solve complex problems. Let's explore the \
+        concept of GA and discover its significance in real-life applications.
+
+        In GA, a population of potential solutions evolves over generations, emulating the survival of the fittest. \
+        Each solution is represented as a chromosome, composed of genes encoding problem-specific attributes. \
+        Through genetic operators like crossover and mutation, new generations emerge, inheriting desirable traits \
+        from their predecessors.
+
+        GA's significance lies in its ability to tackle challenging real-life problems. In engineering, GA \
+        optimizes the design of structures, such as creating aerodynamic shapes or enhancing energy efficiency. \
+        In logistics and scheduling, GA finds optimal routes, allocating resources effectively and minimizing costs. \
+        GA is also prominent in machine learning, assisting in feature selection and parameter optimization for \
+        complex models, leading to better performance and generalization.
+
+        Furthermore, GA revolutionizes the field of bioinformatics by analyzing DNA sequences, identifying genetic \
+        markers, and understanding evolutionary relationships. In financial modeling, GA optimizes investment \
+        strategies, adapting to changing market conditions and maximizing returns.
+        """
+    ),
+)
+
 pages = {
+    "Welcome": welcome_page,
     "PSO": pso.run(),
     "GA": ga.run(),
 }
@@ -47,7 +101,10 @@ menu = pn.widgets.RadioButtonGroup(
     button_type="success",
 )
 
-page = pn.Column(pn.Row(menu), welcome_message)
+page = pn.Column(pn.Column(
+    pn.Row(menu),
+    # pn.pane.GIF(r".\docs\img\pso_animation.gif", width=300, align="center"),
+), welcome_message,)
 
 ishow = pn.bind(show, page=menu)
 pn.state.location.sync(menu, {"value": "page"})
