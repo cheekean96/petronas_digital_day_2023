@@ -17,13 +17,19 @@ welcome_page = pn.Column(
         computational power. PSO mimics the behavior of a flock of birds or a school of fish to solve \
         complex optimization problems. Let's dive into the concept of PSO and explore its real-life significance.
 
-        ![Particle Swarm Optimization](pso.jpg)
-
         In PSO, particles represent potential solutions that navigate a problem space. Each particle adjusts its \
         position and velocity based on its own best-known solution and the global best solution found by the swarm. \
         Through communication and cooperation, the particles converge towards the optimal solution, balancing \
         exploration and exploitation.
-
+        """
+    ),
+    pn.Row(
+        pn.pane.GIF("docs/img/pso_birds.gif", width=300, height=180, align="center"),
+        pn.pane.GIF("docs/img/pso_animation.gif", width=300, height=180, align="center"),
+        align="center"
+    ),
+    pn.pane.Markdown(
+        """
         PSO's significance extends across various domains. In engineering, it aids in designing efficient systems \
         like aircraft wings and energy-efficient buildings. In finance, it optimizes investment portfolios to \
         maximize returns while minimizing risks. PSO also improves traffic flow by optimizing signal timings and \
@@ -46,7 +52,15 @@ welcome_page = pn.Column(
         Each solution is represented as a chromosome, composed of genes encoding problem-specific attributes. \
         Through genetic operators like crossover and mutation, new generations emerge, inheriting desirable traits \
         from their predecessors.
-
+        """
+    ),
+    pn.Row(
+        pn.pane.GIF("docs/img/ga_crossover.gif", width=300, height=180, align="center"),
+        pn.pane.GIF("docs/img/ga_animation.gif", width=300, height=180, align="center"),
+        align="center"
+    ),
+    pn.pane.Markdown(
+        """
         GA's significance lies in its ability to tackle challenging real-life problems. In engineering, GA \
         optimizes the design of structures, such as creating aerodynamic shapes or enhancing energy efficiency. \
         In logistics and scheduling, GA finds optimal routes, allocating resources effectively and minimizing costs. \
@@ -57,7 +71,7 @@ welcome_page = pn.Column(
         markers, and understanding evolutionary relationships. In financial modeling, GA optimizes investment \
         strategies, adapting to changing market conditions and maximizing returns.
         """
-    ),
+    ), align="center"
 )
 
 pages = {
@@ -70,7 +84,7 @@ def show(page):
     return pages[page]
 
 
-starting_page = pn.state.session_args.get("page", [b"PSO"])[0].decode()
+starting_page = pn.state.session_args.get("page", [b"Welcome"])[0].decode()
 
 welcome_message = pn.pane.Markdown(
     """
