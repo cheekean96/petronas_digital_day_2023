@@ -88,11 +88,6 @@ class CreatePSOPanel:
         self.reset_params_button = pn.widgets.Button(name='Reset Parameters', width=50)
         self.reset_params_button.on_click(self.reset_event)
 
-        # # Set the target (Note: Interactive tap not working, replaced with slider instead)
-        # self.tap_stream = hv.streams.SingleTap(transient=True, x=self.target_x, y=self.target_y)
-        # # Place the target indicator
-        # self.target_tap = hv.DynamicMap(self.tap_event, streams=[self.tap_stream])
-
         # Create button events
         self.vector_field = hv.DynamicMap(self.update, streams=[Stream.define('Next')()])
 
@@ -208,26 +203,6 @@ class CreatePSOPanel:
         self.time_slider.value, self.num_informants_slider.value = \
             self.default_time, self.default_num_informants
 
-    # def tap_event(self, x, y):
-    #     """
-    #     Update the global target coordinates and return a visualization of the target.
-
-    #     # Args:
-    #     #     x (float): The x-coordinate of the target.
-    #     #     y (float): The y-coordinate of the target.
-
-    #     Returns:
-    #         hv.Points: Visualization of the target as a Holoviews Points object.
-
-    #     Note:
-    #         This function updates the global target coordinates based on the provided x and y values.
-    #         It also returns a visualization of the target as a Holoviews Points object.
-    #     """
-    #     # Note: interactive tap not functioning properly, replaced with slider value instead.
-    #     x, y = self.target_x, self.target_y
-
-    #     return hv.Points((x, y, 1), label='Target').opts(color='r', marker='^', size=15)
-
     def new_pop_event(self, event):
         """
         Create a new population for the Particle Swarm Optimization (PSO) algorithm and trigger vector field streams.
@@ -301,12 +276,6 @@ class CreatePSOPanel:
             (self.target_x, self.target_y, 1), label='Target'
         ).opts(color='r', marker='^', size=15)
         self.layout = self.vectorfield * self.scatter * self.fittest * self.target_tap
-        # self.layout.opts(
-        #     opts.Points(color='b', fill_alpha=0.1, line_width=1, size=10),
-        #     opts.VectorField(color='Index', cmap='tab20c', magnitude=dim('Magnitude').norm() * 10, pivot='tail'),
-        #     opts.Points('Particles', color='Index', cmap='tab20c', size=5, xlim=(0, 1), ylim=(0, 1)),
-        #     opts.Points(color='r', marker='^', size=15),
-        # )
         return self.layout
 
     def to_angle(self, vector):

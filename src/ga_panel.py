@@ -27,9 +27,7 @@ class CreateGAPanel:
     def run(self):
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness.problem_,
                                    self.target_x, self.target_y)
-        # Sliders and defaults
-        # self.tap = hv.streams.SingleTap(transient=True, x=self.target_x, y=self.target_y)
-        # self.tap_dmap = hv.DynamicMap(self.tap_event, streams=[self.tap]).opts(color='r', marker='^', size=10)
+
         self.target_x_slider = pn.widgets.FloatSlider(
             name="Target (X-Coordinate)", width=550, start=-1.0, end=2.6, value=self.target_x
         )
@@ -117,27 +115,6 @@ class CreateGAPanel:
         self.mutation_rate_slider.value = self.default_mutation_rate
         self.mutation_scale_slider.value = self.default_mutation_scale
 
-    # def tap_event(self, x, y):
-    #     """
-    #     Process a tap event at the specified coordinates.
-
-    #     Args:
-    #         x (float or None): The x-coordinate of the tap event. If None, no action is taken.
-    #         y (float): The y-coordinate of the tap event.
-
-    #     Returns:
-    #         hv.Points or None: If x is not None, returns a Holoviews Points object representing the tapped point.
-    #         Otherwise, returns None.
-
-    #     """
-    #     if x is not None:
-    #         self.target_x, self.target_y = x, y
-    #     else:
-    #         print("NO TAP")
-    #         print(x, y)
-    #         print(self.tap)
-    #     return hv.Points((x, y, 1))
-
     def next_gen_event(self, event):
         """
         Trigger the streams associated with the DynamicMap object.
@@ -173,10 +150,6 @@ class CreateGAPanel:
             (self.target_x, self.target_y, 1), label='Target'
         ).opts(color='r', marker='^', size=15)
         self.layout = self.scatter * self.fittest * self.target_tap
-
-        # hv.Scatter(self.ga.current_population, label='Population').opts(color='b') *\
-        #     hv.Points((self.ga.current_best[0], self.ga.current_best[1], 1), label='Current Fittest').\
-        #     opts(color='c', size=10)
 
         return self.layout
 

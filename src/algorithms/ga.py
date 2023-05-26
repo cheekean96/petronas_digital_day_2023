@@ -2,7 +2,7 @@ import numpy as np
 import random
 from .fitness import Fitness
 
-class GeneticAlgorithm(object):
+class GeneticAlgorithm:
     """
     A class representing a Genetic Algorithm.
 

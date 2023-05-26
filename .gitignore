@@ -1,0 +1,6 @@
+# Environments
+pdd_panel_venv/
+
+# Compiled bytecode files
+src/__pycache__/*
+src/algorithms/__pycache__/*
