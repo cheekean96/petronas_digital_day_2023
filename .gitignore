@@ -1,5 +1,6 @@
 # Environments
 pdd_panel_venv/
+panel_venv/
 
 # Compiled bytecode files
 src/__pycache__/*
