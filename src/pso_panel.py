@@ -109,7 +109,7 @@ class CreatePSOPanel:
         # Layout everything together
         self.instructions = pn.pane.Markdown(
             """
-            # Partical Swarm Optimisation Dashboard
+            # Partical Swarm Optimization: Simulation
             ## Instructions:
             1. **Adjust the (x, y) coordinate to place the target.**
             2. Click '\u25b6 Begin Improving' button to begin improving for the time on the Time Evolving slider.

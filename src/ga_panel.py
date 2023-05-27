@@ -71,7 +71,7 @@ class CreateGAPanel:
         # Layout everything together
         self.instructions = pn.pane.Markdown(
             """
-            # Genetic Algorithm Dashboard
+            # Genetic Algorithm: Simulation
             ## Instructions:
             1. **Adjust the (x, y) coordinate to place the target.**
             2. Click '\u25b6 Begin Evolution' button to begin evolving for the time on the Time Evolving slider.
