@@ -1,10 +1,13 @@
 from src.algorithms.ga import GeneticAlgorithm
-from src.algorithms.fitness import Fitness
+from src.algorithms.fitness import MeanSquaredError
 from holoviews import opts, dim
 import holoviews as hv
 import panel as pn
 from holoviews.streams import Stream
 hv.extension('bokeh', logo=False)
+
+
+Fitness = MeanSquaredError
 
 
 class CreateGAPanel:
@@ -25,8 +28,7 @@ class CreateGAPanel:
         self.default_mutation_scale = 1
 
     def run(self):
-        self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness.problem_,
-                                   self.target_x, self.target_y)
+        self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
 
         self.target_x_slider = pn.widgets.FloatSlider(
             name="Target (X-Coordinate)", width=550, start=-1.0, end=2.6, value=self.target_x
@@ -147,7 +149,7 @@ class CreateGAPanel:
             (self.ga.current_best[0], self.ga.current_best[1], 1), label='Current Fittest'
         ).opts(color='c', size=10)
         self.target_tap = hv.Points(
-            (self.target_x, self.target_y, 1), label='Target'
+            self.fitness.minima(), label='Minima'
         ).opts(color='r', marker='^', size=15)
         self.layout = self.scatter * self.fittest * self.target_tap
 
@@ -169,8 +171,7 @@ class CreateGAPanel:
             - Triggers the streams associated with the DynamicMap object.
 
         """
-        self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness.problem_,
-                                   self.target_x, self.target_y)
+        self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
         hv.streams.Stream.trigger(self.dmap.streams)
 
     def b(self, event):
@@ -191,6 +192,5 @@ class CreateGAPanel:
         self.target_x = self.target_x_slider.value
         self.target_y = self.target_y_slider.value
         self.fitness = Fitness(self.target_x, self.target_y)
-        self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness.problem_,
-                                   self.target_x, self.target_y)
+        self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
         self.dmap.periodic(0.1, timeout=self.niters_slider.value, block=False)

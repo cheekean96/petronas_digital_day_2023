@@ -1,11 +1,14 @@
 import numpy as np
 from src.algorithms.pso import Particle, PSO
-from src.algorithms.fitness import Fitness
+from src.algorithms.fitness import MeanSquaredError
 from holoviews import opts, dim
 import holoviews as hv
 import panel as pn
 from holoviews.streams import Stream
 hv.extension('bokeh', logo=False)
+
+
+Fitness = MeanSquaredError
 
 
 class CreatePSOPanel:
@@ -22,8 +25,8 @@ class CreatePSOPanel:
         self.target_y = 0.5
         self.fitness = Fitness(self.target_x, self.target_y)
         self.swarm = [
-            Particle(self.fitness.problem_, np.random.uniform(-2, 2, self.vector_length),
-                     np.random.rand(self.vector_length), self.target_x, self.target_y, i)
+            Particle(self.fitness, np.random.uniform(-2, 2, self.vector_length),
+                     np.random.rand(self.vector_length), i)
             for i, x in enumerate(range(self.swarm_size))
         ]
         self.vect_data = self.get_vectorfield_data(self.swarm)
@@ -52,7 +55,7 @@ class CreatePSOPanel:
         self.default_scale_update_step = 0.7
 
     def run(self):
-        self.pso = PSO(self.fitness.problem_, self.size, self.vector_length, self.target_x, self.target_y)
+        self.pso = PSO(self.fitness, self.size, self.vector_length)
 
         # Sliders & defaults
         self.target_x_slider = pn.widgets.FloatSlider(
@@ -157,11 +160,10 @@ class CreatePSOPanel:
         self.target_y = self.target_y_slider.value
         self.fitness = Fitness(self.target_x, self.target_y)
         self.pso_fitnesses = []
-        self.pso = PSO(self.fitness.problem_, self.size, self.vector_length,
-                       self.target_x, self.target_y, self.num_informants)
+        self.pso = PSO(self.fitness, self.size, self.vector_length, self.num_informants)
         self.swarm = [
-            Particle(self.fitness.problem_, np.random.uniform(-2, 2, self.vector_length),
-                     np.random.rand(self.vector_length), self.target_x, self.target_y, i)
+            Particle(self.fitness, np.random.uniform(-2, 2, self.vector_length),
+                     np.random.rand(self.vector_length), i)
             for i, x in enumerate(range(self.swarm_size))
         ]
         self.vect_data = self.get_vectorfield_data(self.swarm)
@@ -220,8 +222,7 @@ class CreatePSOPanel:
         """
         self.size = self.population_size_slider.value
         self.num_informants = self.num_informants_slider.value
-        self.pso = PSO(self.fitness.problem_, self.size, vector_length=2,
-                       target_x=self.target_x, target_y=self.target_y, num_informants=self.num_informants)
+        self.pso = PSO(self.fitness, self.size, vector_length=2, num_informants=self.num_informants)
         hv.streams.Stream.trigger(self.vector_field.streams)
 
     def next_gen_event(self, event):
@@ -273,7 +274,7 @@ class CreatePSOPanel:
              self.pso.global_fittest.fittest_position[1], 1), label='Current Fittest'
         ).opts(color='b', fill_alpha=0.1, line_width=1, size=10)
         self.target_tap = hv.Points(
-            (self.target_x, self.target_y, 1), label='Target'
+            self.fitness.minima(), label='Minima'
         ).opts(color='r', marker='^', size=15)
         self.layout = self.vectorfield * self.scatter * self.fittest * self.target_tap
         return self.layout
