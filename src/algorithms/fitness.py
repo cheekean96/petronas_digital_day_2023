@@ -4,6 +4,8 @@ import math
 
 
 class Fitness(ABC):
+    display_name = "Display Name"
+
     def __call__(self, point) -> float:
         """
         Evaluates the fitness of a solution using the mean squared error.
@@ -37,6 +39,8 @@ class Fitness(ABC):
 
 
 class MeanSquaredError(Fitness):
+    display_name = "Paraboloid"
+
     def __init__(self, target_x: float = 0.0, target_y: float = 0.0):
         self.target_x = target_x
         self.target_y = target_y
@@ -87,6 +91,8 @@ class MeanSquaredError(Fitness):
 
 
 class Rastrigin(Fitness):
+    display_name = "Rastagrin"
+
     def __init__(self, dim: int = 2):
         self.dim = dim
 
@@ -102,6 +108,8 @@ class Rastrigin(Fitness):
 
 
 class Ackley(Fitness):
+    display_name = "Ackley"
+
     def __init__(self, dim: int = 2):
         self.dim = dim
 
@@ -120,6 +128,8 @@ class Ackley(Fitness):
 
 
 class Rosenbrock(Fitness):
+    display_name = "Rosenbrock"
+
     def __init__(self, dim: int = 2):
         self.dim = dim
 
@@ -134,6 +144,8 @@ class Rosenbrock(Fitness):
 
 
 class Himmelblau(Fitness):
+    display_name = "Himmelblau"
+
     def __call__(self, point) -> float:
         x, y = point
         return (x * x + y - 11) ** 2 + (x + y * y - 7) ** 2
