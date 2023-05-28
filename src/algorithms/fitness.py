@@ -35,7 +35,7 @@ class Fitness(ABC):
 
 
 class MeanSquaredError(Fitness):
-    def __init__(self, target_x, target_y):
+    def __init__(self, target_x: float = 0.0, target_y: float = 0.0):
         self.target_x = target_x
         self.target_y = target_y
 

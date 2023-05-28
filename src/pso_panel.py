@@ -23,7 +23,7 @@ class CreatePSOPanel:
         # Value initialisation
         self.target_x = 0.0
         self.target_y = 0.0
-        self.fitness = Fitness(self.target_x, self.target_y)
+        self.fitness = Fitness()
         self.swarm = [
             Particle(self.fitness, np.random.uniform(-2, 2, self.vector_length),
                      np.random.rand(self.vector_length), i)
@@ -161,7 +161,7 @@ class CreatePSOPanel:
         self.num_informants = self.num_informants_slider.value
         self.target_x = self.target_x_slider.value
         self.target_y = self.target_y_slider.value
-        self.fitness = Fitness(self.target_x, self.target_y)
+        self.fitness = Fitness()
         self.pso_fitnesses = []
         self.pso = PSO(self.fitness, self.size, self.vector_length, self.num_informants)
         self.swarm = [

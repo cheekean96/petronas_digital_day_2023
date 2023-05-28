@@ -20,7 +20,7 @@ class CreateGAPanel:
         # Value initialisation
         self.target_x = 0.0
         self.target_y = 0.0
-        self.fitness = Fitness(self.target_x, self.target_y)
+        self.fitness = Fitness()
 
         # Widget default values
         self.default_mutate_status = True
@@ -220,6 +220,6 @@ class CreateGAPanel:
         """
         self.target_x = self.target_x_slider.value
         self.target_y = self.target_y_slider.value
-        self.fitness = Fitness(self.target_x, self.target_y)
+        self.fitness = Fitness()
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
         self.dmap.periodic(0.1, timeout=self.niters_slider.value, block=False)
