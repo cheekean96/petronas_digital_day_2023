@@ -1,6 +1,6 @@
 import numpy as np
 from src.algorithms.pso import Particle, PSO
-from src.algorithms.fitness import MeanSquaredError
+from src.algorithms.fitness import MeanSquaredError, Rastrigin, Ackley, Rosenbrock, Himmelblau
 from holoviews import opts, dim
 import holoviews as hv
 from holoviews.plotting.util import process_cmap
@@ -9,7 +9,8 @@ from holoviews.streams import Stream
 hv.extension('bokeh', logo=False)
 
 
-Fitness = MeanSquaredError
+FITNESS = [MeanSquaredError, Rastrigin, Ackley, Rosenbrock, Himmelblau]
+FITNESS_MAP = {fitness.display_name: fitness for fitness in FITNESS}
 
 
 class CreatePSOPanel:
@@ -21,8 +22,10 @@ class CreatePSOPanel:
         self.swarm_size = 50
         self.num_informants = 2
 
+        self.fitness_name = "Paraboloid"
+
         # Value initialisation
-        self.fitness = Fitness()
+        self.fitness = FITNESS_MAP[self.fitness_name]()
         min_x, min_y, max_x, max_y = self.fitness.domain()
         self.swarm = [
             Particle(self.fitness, np.random.uniform(-2, 2, self.vector_length),
@@ -59,6 +62,11 @@ class CreatePSOPanel:
         self.pso = PSO(self.fitness, self.size, self.vector_length)
 
         # Sliders & defaults
+        self.fitness_select = pn.widgets.Select(
+            name='Fitness',
+            options=FITNESS_MAP
+        )
+        self.fitness_select.param.watch(self._on_change_fitness, 'value')
         self.population_size_slider = pn.widgets.IntSlider(
             name='Population Size', width=550, start=10, end=50, value=self.default_pop_size
         )
@@ -87,7 +95,7 @@ class CreatePSOPanel:
         self.reset_params_button.on_click(self.reset_event)
 
         # Create button events
-        self.vector_field = hv.DynamicMap(self.update, streams=[Stream.define('Next')()])
+        self.vector_field = hv.DynamicMap(self.update, streams=[Stream.define('Next')()]).opts(framewise=True)
 
         # Run button
         self.run_button = pn.widgets.Button(name='\u25b6 Begin Improving', width=75)
@@ -117,6 +125,8 @@ class CreatePSOPanel:
                                              pn.Column(pn.Row(self.run_button, pn.Spacer(width=75),
                                                               self.new_pop_button, pn.Spacer(width=75),
                                                               self.next_generation_button),
+                                                       """## Select Test Function:""",
+                                                       self.fitness_select,
                                                        """## Adjust Hyperparameters Here:""",
                                                        self.time_slider,
                                                        self.num_informants_slider,
@@ -148,7 +158,6 @@ class CreatePSOPanel:
         """
         self.size = self.population_size_slider.value
         self.num_informants = self.num_informants_slider.value
-        self.fitness = Fitness()
         self.pso_fitnesses = []
         self.pso = PSO(self.fitness, self.size, self.vector_length, self.num_informants)
         min_x, min_y, max_x, max_y = self.fitness.domain()
@@ -337,3 +346,12 @@ class CreatePSOPanel:
             angles.append(angle)
             ids.append(particle.id)
         return xs, ys, angles, mags, ids
+    
+    def _on_change_fitness(self, event):
+        self.fitness = self.fitness_select.value()
+        self._contours = None
+        min_x, min_y, max_x, max_y = self.fitness.domain()
+        # Attempt to change xlim and ylim but does not seem to work.
+        self.vector_field.opts(xlim=(min_x, max_x), ylim=(min_y, max_y))
+        hv.streams.Stream.trigger(self.vector_field.streams)
+

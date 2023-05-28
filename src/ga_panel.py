@@ -1,6 +1,6 @@
 import numpy as np
 from src.algorithms.ga import GeneticAlgorithm
-from src.algorithms.fitness import MeanSquaredError
+from src.algorithms.fitness import MeanSquaredError, Rastrigin, Ackley, Rosenbrock, Himmelblau
 from holoviews import opts, dim
 import holoviews as hv
 from holoviews.plotting.util import process_cmap
@@ -8,9 +8,8 @@ import panel as pn
 from holoviews.streams import Stream
 hv.extension('bokeh', logo=False)
 
-
-Fitness = MeanSquaredError
-
+FITNESS = [MeanSquaredError, Rastrigin, Ackley, Rosenbrock, Himmelblau]
+FITNESS_MAP = {fitness.display_name: fitness for fitness in FITNESS}
 
 class CreateGAPanel:
 
@@ -18,8 +17,10 @@ class CreateGAPanel:
         self.population_size = 100
         self.vector_length = 2
 
+        self.fitness_name = "Paraboloid"
+
         # Value initialisation
-        self.fitness = Fitness()
+        self.fitness = FITNESS_MAP[self.fitness_name]()
 
         # Widget default values
         self.default_mutate_status = True
@@ -33,6 +34,11 @@ class CreateGAPanel:
     def run(self):
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
 
+        self.fitness_select = pn.widgets.Select(
+            name='Fitness',
+            options=FITNESS_MAP
+        )
+        self.fitness_select.param.watch(self._on_change_fitness, 'value')
         self.mutate_checkbox = pn.widgets.Checkbox(
             name='Mutate', width=550, value=self.default_mutate_status
         )
@@ -82,6 +88,8 @@ class CreateGAPanel:
                                              pn.Row(self.run_button, pn.Spacer(width=75),
                                                     self.new_pop_button, pn.Spacer(width=75),
                                                     self.next_generation_button),
+                                            """## Select Test Function:""",
+                                            self.fitness_select,
                                              """## Adjust Hyperparameters Here:""",
                                              self.mutate_checkbox,
                                              self.niters_slider,
@@ -208,8 +216,15 @@ class CreateGAPanel:
             - The duration is determined by the value of the `niters_slider` attribute.
 
         """
-        self.fitness = Fitness()
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
         if self.dmap.periodic.instance is not None:
             self.dmap.periodic.stop()
         self.dmap.periodic(0.1, timeout=self.niters_slider.value, block=False)
+
+    def _on_change_fitness(self, event):
+        self.fitness = self.fitness_select.value()
+        self._contours = None
+        min_x, min_y, max_x, max_y = self.fitness.domain()
+        # Attempt to change xlim and ylim but does not seem to work.
+        self.dmap.opts(xlim=(min_x, max_x), ylim=(min_y, max_y))
+        hv.streams.Stream.trigger(self.dmap.streams)
