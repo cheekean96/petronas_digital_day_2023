@@ -24,6 +24,15 @@ class Fitness(ABC):
         """
         pass
 
+    def domain(self) -> tuple[float, float, float, float]:
+        """
+        Returns the domain in format min x, min y, max x, max y.
+
+        Returns:
+            Tuple of min x, min y, max x max y.
+        """
+        pass
+
 
 class MeanSquaredError(Fitness):
     def __init__(self, target_x, target_y):
@@ -43,12 +52,12 @@ class MeanSquaredError(Fitness):
         """
         return self._mean_squared_error(point)
     
-    def minima(self) -> list[float]:
+    def minima(self) -> list[list[float]]:
         """
-        Return a list of global minima.
+        Returns a list of global minima.
 
         Returns:
-            list of global minima.
+            List of global minima.
         """
         return [[self.target_x, self.target_y]]
 
@@ -64,3 +73,12 @@ class MeanSquaredError(Fitness):
         """
         y_pred = [self.target_x, self.target_y]
         return ((y_true - y_pred) ** 2).mean(axis=0)
+    
+    def domain(self) -> tuple[float, float, float, float]:
+        """
+        Returns the domain in format min x, min y, max x, max y.
+
+        Returns:
+            Tuple of min x, min y, max x max y.
+        """
+        return (-2.0, -2.0, 2.0, 2.0)
