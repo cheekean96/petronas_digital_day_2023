@@ -25,9 +25,10 @@ class CreatePSOPanel:
         self.target_x = 0.0
         self.target_y = 0.0
         self.fitness = Fitness()
+        min_x, min_y, max_x, max_y = self.fitness.domain()
         self.swarm = [
             Particle(self.fitness, np.random.uniform(-2, 2, self.vector_length),
-                     np.random.rand(self.vector_length), i)
+                     np.random.uniform([min_x, min_y], [max_x, max_y]), i)
             for i, x in enumerate(range(self.swarm_size))
         ]
         self.vect_data = self.get_vectorfield_data(self.swarm)
@@ -165,9 +166,10 @@ class CreatePSOPanel:
         self.fitness = Fitness()
         self.pso_fitnesses = []
         self.pso = PSO(self.fitness, self.size, self.vector_length, self.num_informants)
+        min_x, min_y, max_x, max_y = self.fitness.domain()
         self.swarm = [
             Particle(self.fitness, np.random.uniform(-2, 2, self.vector_length),
-                     np.random.rand(self.vector_length), i)
+                     np.random.uniform([min_x, min_y], [max_x, max_y]), i)
             for i, x in enumerate(range(self.swarm_size))
         ]
         self.vect_data = self.get_vectorfield_data(self.swarm)

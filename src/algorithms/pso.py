@@ -117,7 +117,8 @@ class PSO:
         self.swarm_size = swarm_size
         self.num_informants = num_informants
         self.fitness = fitness
-        self.swarm = [Particle(self.fitness, np.zeros(vector_length), np.random.rand(vector_length), i)
+        min_x, min_y, max_x, max_y = self.fitness.domain()
+        self.swarm = [Particle(self.fitness, np.zeros(vector_length), np.random.uniform([min_x, min_y], [max_x, max_y]), i)
                       for i in range(swarm_size)]
         self.global_fittest = np.random.choice(self.swarm, 1)[0]
 

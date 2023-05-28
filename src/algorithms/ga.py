@@ -73,7 +73,9 @@ class GeneticAlgorithm:
             The generated values are uniformly distributed between 0 and 1.
 
         """
-        return np.random.rand(population_size, vector_length)
+        # This is now hard-coded to use vector_length == 2.
+        min_x, min_y, max_x, max_y = self.fitness.domain()
+        return np.random.uniform([min_x, min_y], [max_x, max_y], (population_size, 2))
 
     def tournament_select_with_replacement(self, population, tournament_size):
         """
