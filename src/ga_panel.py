@@ -224,4 +224,6 @@ class CreateGAPanel:
         self.target_y = self.target_y_slider.value
         self.fitness = Fitness()
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
+        if self.dmap.periodic.instance is not None:
+            self.dmap.periodic.stop()
         self.dmap.periodic(0.1, timeout=self.niters_slider.value, block=False)
