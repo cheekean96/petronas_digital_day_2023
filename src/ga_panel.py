@@ -76,7 +76,7 @@ class CreateGAPanel:
             """
             # Genetic Algorithm: Simulation
             ## Instructions:
-            1. **Adjust the (x, y) coordinate to place the target.**
+            1. **Choose the fitness function.**
             2. Click '\u25b6 Begin Evolution' button to begin evolving for the time on the Time Evolving slider.
             3. Experiment with the Mutation Rate (the probability of an individual in the next generation mutating)
             4. Experiment with the Mutation Scale (the size of the mutation,

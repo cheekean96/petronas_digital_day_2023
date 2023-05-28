@@ -114,7 +114,7 @@ class CreatePSOPanel:
             """
             # Partical Swarm Optimization: Simulation
             ## Instructions:
-            1. **Adjust the (x, y) coordinate to place the target.**
+            1. **Choose the fitness function.**
             2. Click '\u25b6 Begin Improving' button to begin improving for the time on the Time Evolving slider.
             3. Experiment with the sliders.
             """
