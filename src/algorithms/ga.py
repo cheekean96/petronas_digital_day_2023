@@ -7,19 +7,16 @@ class GeneticAlgorithm:
     A class representing a Genetic Algorithm.
 
     Attributes:
-        problem (callable): A function that takes an individual as input and returns a scalar fitness value.
+        fitness (Fitness): The `Fitness` object representing the fitness evaluation function.
         current_population (numpy.ndarray): A 2-dimensional array representing the current population,
                                             where each row represents an individual and each column represents a gene.
         current_best (float): The fitness value of the current best individual in the population.
     """
 
-    def __init__(self, population_size, vector_length, problem, target_x, target_y):
-        self.problem = problem
-        self.target_x = target_x
-        self.target_y = target_y
-        self.fitness = Fitness(self.target_x, self.target_y)
+    def __init__(self, population_size, vector_length, fitness):
+        self.fitness = fitness
         self.current_population = self.create_population(population_size, vector_length)
-        self.current_best = self.find_current_best(self.current_population, self.problem)
+        self.current_best = self.find_current_best(self.current_population)
 
     def next_generation(self, mrate, mscale, should_mutate):
         """
@@ -38,17 +35,16 @@ class GeneticAlgorithm:
             - Updates the current_best attribute of the object.
         """
         self.current_population = self.update_population(
-            self.current_population, self.problem, should_mutate, mrate, mscale
+            self.current_population, should_mutate, mrate, mscale
         )
-        self.current_best = self.find_current_best(self.current_population, self.problem)
+        self.current_best = self.find_current_best(self.current_population)
 
-    def find_current_best(self, population, problem):
+    def find_current_best(self, population):
         """
         Evaluate a given swarm and return the fittest particle based on their best previous position.
 
         Args:
             swarm (list): List of particles in the swarm.
-            problem (object): The problem instance used for assessing fitness.
 
         Returns:
             Particle: The fittest particle in the swarm based on their best previous position.
@@ -57,7 +53,7 @@ class GeneticAlgorithm:
             This function can be optimized to loop over the swarm only once, but for the sake of simplicity
             in this tutorial, it is implemented in three lines.
         """
-        fitnesses = [self.fitness.assess_fitness_(x, problem) for x in population]
+        fitnesses = [self.fitness(x) for x in population]
         best_value = min(fitnesses)
         best_index = fitnesses.index(best_value)
         return population[best_index]
@@ -77,9 +73,11 @@ class GeneticAlgorithm:
             The generated values are uniformly distributed between 0 and 1.
 
         """
-        return np.random.rand(population_size, vector_length)
+        # This is now hard-coded to use vector_length == 2.
+        min_x, min_y, max_x, max_y = self.fitness.domain()
+        return np.random.uniform([min_x, min_y], [max_x, max_y], (population_size, 2))
 
-    def tournament_select_with_replacement(self, population, tournament_size, problem):
+    def tournament_select_with_replacement(self, population, tournament_size):
         """
         Select an individual from the population using tournament selection with replacement.
 
@@ -87,15 +85,14 @@ class GeneticAlgorithm:
             population (numpy.ndarray): A 2-dimensional array of individuals where
                                         each row represents an individual and each column represents a gene.
             tournament_size (int): The number of individuals in each tournament.
-            problem (callable): A function that takes an individual as input and returns a scalar fitness value.
 
         Returns:
-            The fittest individual among the challengers, as determined by the `problem` function.
+            The fittest individual among the challengers, as determined by the fitness function.
 
         """
         challengers_indexes = np.random.choice(population.shape[0], tournament_size, replace=True)
         challengers = population[challengers_indexes]
-        return self.find_current_best(challengers, problem)
+        return self.find_current_best(challengers)
 
     def crossover(self, parent_a, parent_b):
         """
@@ -141,14 +138,13 @@ class GeneticAlgorithm:
             child = child + mutation_value
         return child
 
-    def update_population(self, current_population, problem, should_mutate, mutation_rate, mutation_scale):
+    def update_population(self, current_population, should_mutate, mutation_rate, mutation_scale):
         """
         Perform one generational update of the Genetic Algorithm.
 
         Args:
             current_population (numpy.ndarray): A 2-dimensional array representing the current population, where each
                                                 row represents an individual and each column represents a gene.
-            problem (callable): A function that takes an individual as input and returns a scalar fitness value.
             should_mutate (bool): Flag indicating whether mutation should be applied to the offspring.
             mutation_rate (float): The probability of mutation occurring for each gene.
             mutation_scale (float): The standard deviation of the Gaussian distribution used for mutation.
@@ -161,10 +157,10 @@ class GeneticAlgorithm:
         tournament_size = 2
         for i in range(int(pop_size / 2)):
             parent_a = self.tournament_select_with_replacement(
-                current_population, tournament_size, problem
+                current_population, tournament_size
             )
             parent_b = self.tournament_select_with_replacement(
-                current_population, tournament_size, problem
+                current_population, tournament_size
             )
             child_a, child_b = self.crossover(parent_a, parent_b)
             next_population[i] = self.mutate(child_a, mutation_rate, mutation_scale)\

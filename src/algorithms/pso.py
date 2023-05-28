@@ -1,6 +1,10 @@
 import numpy as np
 import random
-from .fitness import Fitness
+from .fitness import MeanSquaredError
+
+
+Fitness = MeanSquaredError
+
 
 class Particle:
     """
@@ -8,8 +12,8 @@ class Particle:
 
     Attributes
     ----------
-    problem : function
-        The problem to minimize.
+    fitness : Fitness
+        The `Fitness` object representing the fitness evaluation function.
     velocity : np.array
         The current velocity of the particle.
     position : np.array
@@ -28,16 +32,13 @@ class Particle:
         Updates the velocity and position of the particle using the PSO update algorithm.
     """
 
-    def __init__(self, problem, velocity, position, index, target_x, target_y):
+    def __init__(self, fitness: Fitness, velocity, position, index):
         self.velocity = velocity
         self.position = position
+        self.fitness = fitness
         self.fittest_position = position
-        self.problem = problem
         self.id = index
         self.previous_fitness = 1e7
-        self.target_x = target_x
-        self.target_y = target_y
-        self.fitness = Fitness(self.target_x, self.target_y)
 
     def assess_fitness(self):
         """
@@ -47,7 +48,7 @@ class Particle:
             The fitness value of the particle.
 
         """
-        return self.fitness.assess_fitness_(self.position, self.problem)
+        return self.fitness(self.position)
 
     def update(self, fittest_informant, global_fittest, follow_current, follow_personal_best,
                follow_social_best, follow_global_best, scale_update_step):
@@ -74,7 +75,7 @@ class Particle:
                          + cognitive * (self.fittest_position - self.position)
                          + social * (fittest_informant.fittest_position - self.position)
                          + glob * (global_fittest.fittest_position - self.position))
-        current_fitness = self.assess_fitness()
+        current_fitness = self.fitness(self.position)
         if current_fitness < self.previous_fitness:
             self.fittest_position = self.position
         self.previous_fitness = current_fitness
@@ -90,7 +91,7 @@ class PSO:
     Attributes:
         swarm_size (int): The size of the swarm.
         vector_length (int): The dimensions of the problem. Should be the same
-        as the one used when creating the problem object.
+        as the one used when creating the fitness object.
         num_informants (int): The number of informants used for the social component in particle velocity update.
 
     Public Methods:
@@ -102,12 +103,12 @@ class PSO:
             Update the `global_fittest` variable to be the current fittest particle in the swarm.
     """
 
-    def __init__(self, problem, swarm_size, vector_length, target_x, target_y, num_informants=2):
+    def __init__(self, fitness: Fitness, swarm_size, vector_length, num_informants=2):
         """
         Initialize a PSO object.
 
         Args:
-            problem: The problem object representing the fitness evaluation function.
+            fitness: The `Fitness` object representing the fitness evaluation function.
             swarm_size (int): The size of the swarm.
             vector_length (int): The dimensions of the problem. Should be the same as
             the one used when creating the problem object.
@@ -115,14 +116,11 @@ class PSO:
         """
         self.swarm_size = swarm_size
         self.num_informants = num_informants
-        self.problem = problem
-        self.target_x = target_x
-        self.target_y = target_y
-        self.swarm = [Particle(self.problem, np.zeros(vector_length), np.random.rand(vector_length),
-                               self.target_x, self.target_y, i)
+        self.fitness = fitness
+        min_x, min_y, max_x, max_y = self.fitness.domain()
+        self.swarm = [Particle(self.fitness, np.zeros(vector_length), np.random.uniform([min_x, min_y], [max_x, max_y]), i)
                       for i in range(swarm_size)]
         self.global_fittest = np.random.choice(self.swarm, 1)[0]
-        self.fitness = Fitness(self.target_x, self.target_y)
 
     def update_swarm(self, follow_current, follow_personal_best, follow_social_best,
                      follow_global_best, scale_update_step):
@@ -144,7 +142,7 @@ class PSO:
             informants = np.random.choice(self.swarm, self.num_informants)
             if particle not in informants:
                 np.append(informants, particle)
-            fittest_informant = self.find_current_best(informants, self.problem)
+            fittest_informant = self.find_current_best(informants)
             particle.update(fittest_informant,
                             self.global_fittest,
                             follow_current,
@@ -161,7 +159,7 @@ class PSO:
             This method compares the fitness of each particle in the swarm and updates
             `global_fittest` if a fitter particle is found.
         """
-        fittest = self.find_current_best(self.swarm, self.problem)
+        fittest = self.find_current_best(self.swarm)
         global_fittest_fitness = self.global_fittest.assess_fitness()
         if (fittest.assess_fitness() < global_fittest_fitness):
             self.global_fittest = fittest
@@ -187,13 +185,12 @@ class PSO:
         self.update_global_fittest()
 
     # Find the fittest Partle in the swarm
-    def find_current_best(self, swarm, problem):
+    def find_current_best(self, swarm):
         """
         Evaluate a given swarm and return the fittest particle based on their best previous position.
 
         Args:
             swarm (list): List of particles in the swarm.
-            problem (object): The problem instance used for assessing fitness.
 
         Returns:
             Particle: The fittest particle in the swarm based on their best previous position.
@@ -202,7 +199,7 @@ class PSO:
             This function can be optimized to loop over the swarm only once, but for the sake of simplicity
             in this tutorial, it is implemented in three lines.
         """
-        fitnesses = [self.fitness.assess_fitness_(x.fittest_position, problem) for x in swarm]
+        fitnesses = [self.fitness(x.fittest_position) for x in swarm]
         best_value = min(fitnesses)
         best_index = fitnesses.index(best_value)
         return swarm[best_index]
