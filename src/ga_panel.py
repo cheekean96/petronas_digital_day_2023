@@ -157,7 +157,7 @@ class CreateGAPanel:
             self.fitness.minima(), label='Minima'
         ).opts(color='r', marker='^', size=15)
         self.contours = self._contour_plot()
-        self.layout = self.scatter * self.fittest * self.target_tap * self.contours
+        self.layout = self.scatter * self.contours * self.target_tap * self.fittest
 
         return self.layout
     
