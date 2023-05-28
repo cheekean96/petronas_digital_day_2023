@@ -1,3 +1,4 @@
+import numpy as np
 from src.algorithms.ga import GeneticAlgorithm
 from src.algorithms.fitness import MeanSquaredError
 from holoviews import opts, dim
@@ -17,8 +18,8 @@ class CreateGAPanel:
         self.vector_length = 2
 
         # Value initialisation
-        self.target_x = 0.5
-        self.target_y = 0.5
+        self.target_x = 0.0
+        self.target_y = 0.0
         self.fitness = Fitness(self.target_x, self.target_y)
 
         # Widget default values
@@ -26,6 +27,9 @@ class CreateGAPanel:
         self.default_niters = 5
         self.default_mutation_rate = 0.3
         self.default_mutation_scale = 1
+
+        # Cached objects
+        self._contours = None
 
     def run(self):
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
@@ -111,7 +115,7 @@ class CreateGAPanel:
             This function resets the values of several global variables to their default values.
             It is typically used as an event handler for a reset button or similar functionality.
         """
-        self.target_x_slider.value, self.target_y_slider.value = 0.5, 0.5
+        self.target_x_slider.value, self.target_y_slider.value = 0.0, 0.0
         self.mutate_checkbox.value = self.default_mutate_status
         self.niters_slider.value = self.default_niters
         self.mutation_rate_slider.value = self.default_mutation_rate
@@ -142,18 +146,43 @@ class CreateGAPanel:
         self.ga.next_generation(
             self.mutation_rate_slider.value, self.mutation_scale_slider.value, self.mutate_checkbox.value
         )
+        min_x, min_y, max_x, max_y = self.fitness.domain()
         self.scatter = hv.Scatter(
             self.ga.current_population, label='Population'
-        ).opts(color='b')
+        ).opts(color='b', xlim=(min_x, max_x), ylim=(min_y, max_y))
         self.fittest = hv.Points(
             (self.ga.current_best[0], self.ga.current_best[1], 1), label='Current Fittest'
         ).opts(color='c', size=10)
         self.target_tap = hv.Points(
             self.fitness.minima(), label='Minima'
         ).opts(color='r', marker='^', size=15)
-        self.layout = self.scatter * self.fittest * self.target_tap
+        self.contours = self._contour_plot()
+        self.layout = self.scatter * self.fittest * self.target_tap * self.contours
 
         return self.layout
+    
+    def _contour_plot(self) -> hv.Contours:
+        """
+        Create contour plot.
+        This plot is static for each fitness function and set of bounds,
+        so it is cached.
+        To regenerate, set `self._contours` to None.
+
+        Returns:
+            hv.Contours: The Contour plot.
+        """
+        if self._contours is None:
+            bounds = self.fitness.domain()
+            min_x, min_y, max_x, max_y = bounds
+            x = np.linspace(min_x, max_x, 1000)
+            y = np.linspace(min_y, max_y, 1000)
+            X, Y = np.meshgrid(x, y)
+            Z = np.apply_along_axis(self.fitness, 1, np.c_[X.ravel(), Y.ravel()]).reshape(X.shape)
+            img = hv.Image(Z, bounds=bounds) 
+            self._contours = hv.operation.contours(img, levels=20)
+            self._contours.opts(opts.Contours(cmap='fire', colorbar=True, tools=['hover']))
+        return self._contours
+
 
     def e(self, event):
         """

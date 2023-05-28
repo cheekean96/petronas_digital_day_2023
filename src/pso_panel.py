@@ -21,8 +21,8 @@ class CreatePSOPanel:
         self.num_informants = 2
 
         # Value initialisation
-        self.target_x = 0.5
-        self.target_y = 0.5
+        self.target_x = 0.0
+        self.target_y = 0.0
         self.fitness = Fitness(self.target_x, self.target_y)
         self.swarm = [
             Particle(self.fitness, np.random.uniform(-2, 2, self.vector_length),
@@ -53,6 +53,9 @@ class CreatePSOPanel:
         self.default_social_best = 0.9
         self.default_global_best = 0.0
         self.default_scale_update_step = 0.7
+
+        # Cached objects
+        self._contours = None
 
     def run(self):
         self.pso = PSO(self.fitness, self.size, self.vector_length)
@@ -195,7 +198,7 @@ class CreatePSOPanel:
             This function resets the values of several global variables to their default values.
             It is typically used as an event handler for a reset button or similar functionality.
         """
-        self.target_x_slider.value, self.target_y_slider.value = 0.5, 0.5
+        self.target_x_slider.value, self.target_y_slider.value = 0.0, 0.0
         self.follow_current_slider.value, self.follow_personal_best_slider.value = \
             self.default_current, self.default_personal_best
         self.follow_social_best_slider.value, self.follow_global_best_slider.value = \
@@ -266,9 +269,10 @@ class CreatePSOPanel:
             for i, particle in enumerate(self.swarm)
         ]
         # Place the target indicator
+        min_x, min_y, max_x, max_y = self.fitness.domain()
         self.scatter = hv.Points(
             self.particles, vdims=['Index'], group='Particles'
-        ).opts(color='Index', cmap='tab20c', size=5, xlim=(0, 1), ylim=(0, 1))
+        ).opts(color='Index', cmap='tab20c', size=5, xlim=(min_x, max_x), ylim=(min_y, max_y))
         self.fittest = hv.Points(
             (self.pso.global_fittest.fittest_position[0],
              self.pso.global_fittest.fittest_position[1], 1), label='Current Fittest'
@@ -276,8 +280,31 @@ class CreatePSOPanel:
         self.target_tap = hv.Points(
             self.fitness.minima(), label='Minima'
         ).opts(color='r', marker='^', size=15)
-        self.layout = self.vectorfield * self.scatter * self.fittest * self.target_tap
+        self.contours = self._contour_plot()
+        self.layout = self.vectorfield * self.scatter * self.fittest * self.target_tap * self.contours
         return self.layout
+
+    def _contour_plot(self) -> hv.Contours:
+        """
+        Create contour plot.
+        This plot is static for each fitness function and set of bounds,
+        so it is cached.
+        To regenerate, set `self._contours` to None.
+
+        Returns:
+            hv.Contours: The Contour plot.
+        """
+        if self._contours is None:
+            bounds = self.fitness.domain()
+            min_x, min_y, max_x, max_y = bounds
+            x = np.linspace(min_x, max_x, 1000)
+            y = np.linspace(min_y, max_y, 1000)
+            X, Y = np.meshgrid(x, y)
+            Z = np.apply_along_axis(self.fitness, 1, np.c_[X.ravel(), Y.ravel()]).reshape(X.shape)
+            img = hv.Image(Z, bounds=bounds) 
+            self._contours = hv.operation.contours(img, levels=20)
+            self._contours.opts(opts.Contours(cmap='fire', colorbar=True, tools=['hover']))
+        return self._contours
 
     def to_angle(self, vector):
         """
