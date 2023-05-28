@@ -15,12 +15,12 @@ class Fitness(ABC):
         pass
 
 
-    def minima(self) -> list[float]:
+    def minima(self) -> list[list[float]]:
         """
-        Return a list of global minima.
+        Returns a list of global minima.
 
         Returns:
-            list of global minima.
+            List of global minima.
         """
         pass
 
