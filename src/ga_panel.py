@@ -19,8 +19,6 @@ class CreateGAPanel:
         self.vector_length = 2
 
         # Value initialisation
-        self.target_x = 0.0
-        self.target_y = 0.0
         self.fitness = Fitness()
 
         # Widget default values
@@ -35,12 +33,6 @@ class CreateGAPanel:
     def run(self):
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
 
-        self.target_x_slider = pn.widgets.FloatSlider(
-            name="Target (X-Coordinate)", width=550, start=-1.0, end=2.6, value=self.target_x
-        )
-        self.target_y_slider = pn.widgets.FloatSlider(
-            name="Target (Y-Coordinate)", width=550, start=-1.0, end=2.6, value=self.target_y
-        )
         self.mutate_checkbox = pn.widgets.Checkbox(
             name='Mutate', width=550, value=self.default_mutate_status
         )
@@ -90,9 +82,6 @@ class CreateGAPanel:
                                              pn.Row(self.run_button, pn.Spacer(width=75),
                                                     self.new_pop_button, pn.Spacer(width=75),
                                                     self.next_generation_button),
-                                             """## Place Your Target Here:""",
-                                             self.target_x_slider,
-                                             self.target_y_slider,
                                              """## Adjust Hyperparameters Here:""",
                                              self.mutate_checkbox,
                                              self.niters_slider,
@@ -116,7 +105,6 @@ class CreateGAPanel:
             This function resets the values of several global variables to their default values.
             It is typically used as an event handler for a reset button or similar functionality.
         """
-        self.target_x_slider.value, self.target_y_slider.value = 0.0, 0.0
         self.mutate_checkbox.value = self.default_mutate_status
         self.niters_slider.value = self.default_niters
         self.mutation_rate_slider.value = self.default_mutation_rate
@@ -220,8 +208,6 @@ class CreateGAPanel:
             - The duration is determined by the value of the `niters_slider` attribute.
 
         """
-        self.target_x = self.target_x_slider.value
-        self.target_y = self.target_y_slider.value
         self.fitness = Fitness()
         self.ga = GeneticAlgorithm(self.population_size, self.vector_length, self.fitness)
         if self.dmap.periodic.instance is not None:

@@ -22,8 +22,6 @@ class CreatePSOPanel:
         self.num_informants = 2
 
         # Value initialisation
-        self.target_x = 0.0
-        self.target_y = 0.0
         self.fitness = Fitness()
         min_x, min_y, max_x, max_y = self.fitness.domain()
         self.swarm = [
@@ -43,8 +41,6 @@ class CreatePSOPanel:
             opts.VectorField(color='Index', cmap='tab20c', magnitude=dim('Magnitude').norm() * 10, pivot='tail'),
             opts.Points(color='Index', cmap='tab20c', size=5)
         )
-        self.target_tap = hv.Points(
-            (self.target_x, self.target_y, 1), label='Target').opts(color='r', marker='^', size=15)
 
         # Widget default values
         self.default_pop_size = 25
@@ -63,12 +59,6 @@ class CreatePSOPanel:
         self.pso = PSO(self.fitness, self.size, self.vector_length)
 
         # Sliders & defaults
-        self.target_x_slider = pn.widgets.FloatSlider(
-            name="Target (X-Coordinate)", width=550, start=0.0, end=1.0, value=self.target_x
-        )
-        self.target_y_slider = pn.widgets.FloatSlider(
-            name="Target (Y-Coordinate)", width=550, start=0.0, end=1.0, value=self.target_y
-        )
         self.population_size_slider = pn.widgets.IntSlider(
             name='Population Size', width=550, start=10, end=50, value=self.default_pop_size
         )
@@ -127,9 +117,6 @@ class CreatePSOPanel:
                                              pn.Column(pn.Row(self.run_button, pn.Spacer(width=75),
                                                               self.new_pop_button, pn.Spacer(width=75),
                                                               self.next_generation_button),
-                                                       """## Place Your Target Here:""",
-                                                       self.target_x_slider,
-                                                       self.target_y_slider,
                                                        """## Adjust Hyperparameters Here:""",
                                                        self.time_slider,
                                                        self.num_informants_slider,
@@ -161,8 +148,6 @@ class CreatePSOPanel:
         """
         self.size = self.population_size_slider.value
         self.num_informants = self.num_informants_slider.value
-        self.target_x = self.target_x_slider.value
-        self.target_y = self.target_y_slider.value
         self.fitness = Fitness()
         self.pso_fitnesses = []
         self.pso = PSO(self.fitness, self.size, self.vector_length, self.num_informants)
@@ -201,7 +186,6 @@ class CreatePSOPanel:
             This function resets the values of several global variables to their default values.
             It is typically used as an event handler for a reset button or similar functionality.
         """
-        self.target_x_slider.value, self.target_y_slider.value = 0.0, 0.0
         self.follow_current_slider.value, self.follow_personal_best_slider.value = \
             self.default_current, self.default_personal_best
         self.follow_social_best_slider.value, self.follow_global_best_slider.value = \
