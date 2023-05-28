@@ -3,6 +3,7 @@ from src.algorithms.ga import GeneticAlgorithm
 from src.algorithms.fitness import MeanSquaredError
 from holoviews import opts, dim
 import holoviews as hv
+from holoviews.plotting.util import process_cmap
 import panel as pn
 from holoviews.streams import Stream
 hv.extension('bokeh', logo=False)
@@ -180,7 +181,8 @@ class CreateGAPanel:
             Z = np.apply_along_axis(self.fitness, 1, np.c_[X.ravel(), Y.ravel()]).reshape(X.shape)
             img = hv.Image(Z, bounds=bounds) 
             self._contours = hv.operation.contours(img, levels=20)
-            self._contours.opts(opts.Contours(cmap='fire', colorbar=True, tools=['hover']))
+            cmap = process_cmap(['#f0f0f0', '#e0e0e0'])
+            self._contours.opts(opts.Contours(cmap=cmap, show_legend=False))
         return self._contours
 
 
