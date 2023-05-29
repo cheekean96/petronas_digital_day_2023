@@ -8,7 +8,7 @@ pso = CreatePSOPanel()
 ga = CreateGAPanel()
 
 welcome_page = pn.Column(
-    pn.pane.Video("docs/vid/pdd_opt.mp4", width=600, autoplay=True, loop=True, align="center"),
+    # pn.pane.Video("docs/vid/pdd_opt.mp4", width=600, autoplay=True, loop=True, align="center"),
     pn.pane.Markdown(
         """
         # Particle Swarm Optimization (PSO)
